@@ -48,8 +48,11 @@ jobs:
 
   upload_musl:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-musl, aarch64-unknown-linux-musl]
     env:
-      TARGET: x86_64-unknown-linux-musl
+      TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -64,7 +67,7 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --release --locked --target x86_64-unknown-linux-musl
+          args: --release --locked --target ${{ env.TARGET }}
 
       - run: cd target/${{ env.TARGET }}/release && tar czf lsp-ws-proxy.tar.gz lsp-ws-proxy
 
@@ -75,5 +78,5 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: target/${{ env.TARGET }}/release/lsp-ws-proxy.tar.gz
-          asset_name: lsp-ws-proxy_linux-musl.tar.gz
+          asset_name: lsp-ws-proxy_${{ env.TARGET }}.tar.gz
           asset_content_type: application/octet-stream
